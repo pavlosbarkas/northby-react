@@ -29,17 +29,20 @@ class ShoppingCartsController < ApplicationController
 
   # POST /shopping_carts or /shopping_carts.json
   def create
-    @shopping_cart = ShoppingCart.new(shopping_cart_params)
+    seat_number = params[:seatNumber]
+    seat_range = seat_number...seat_number + params[:ticketsToBuyCount]
+    tickets = Ticket.where(
+      concert_id: params[:concertId],
+      row: params[:row],
+      number: seat_range
+    ).all
 
-    respond_to do |format|
-      if @shopping_cart.save
-        format.html { redirect_to @shopping_cart, notice: "Shopping cart was successfully created." }
-        format.json { render :show, status: :created, location: @shopping_cart }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @shopping_cart.errors, status: :unprocessable_entity }
-      end
-    end
+    tickets.update(
+      status: params[:status],
+      user: params[status] === "held" ? current_user.id : nil
+    )
+
+    render(json: tickets.map(&:to_concert_h))
   end
 
   # PATCH/PUT /shopping_carts/1 or /shopping_carts/1.json
